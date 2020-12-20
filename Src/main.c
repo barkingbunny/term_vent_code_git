@@ -45,6 +45,16 @@
  * Program pro ventilacni system
  */
 #include "pinmap.h"
+#include "peripherals.h"
+#include "global.h"
+#include "lcd_12864.h"
+#include "BME280.h"
+#include "ds18b20.h"
+#include <stdio.h>
+#include "rtc_api.h"
+#include "Time.h"
+#include "log.h"
+#include "sleep.h"
 #include "pwm.h"
 
 
@@ -103,7 +113,11 @@ int main(void)
   uint8_t en_count_last=0;
   
   
-
+  //timeouts
+  Compare_t backlite_compare, measure_compare, led_compare, time_compare, button_compare, heating_compare, logging_compare, show_timeout, heating_instant_timeout;
+  backlite_compare.overflow=FALSE , measure_compare.overflow=FALSE, led_compare.overflow=FALSE, time_compare.overflow=FALSE, button_compare.overflow=FALSE, heating_compare.overflow=FALSE, logging_compare.overflow=FALSE, show_timeout.overflow=FALSE, heating_instant_timeout.overflow=FALSE;
+  actual_HALtick.overflow = FALSE;
+  past_HALtick.overflow = FALSE;
   
   /* USER CODE END Init */
 
@@ -129,6 +143,20 @@ int main(void)
   MX_USART4_UART_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+  backlite_init();
+  fill_comparer(BACKLITE_TIMEOUT, &backlite_compare);
+
+  lcd12864_init(&hspi1);
+  line(0,60,110,60,1);
+  lcd_setCharPos(0,0);
+  lcd_printString("Initialization unit\r");
+  lcd_printString("term_vent_git\r");
+  snprintf(buffer_s, 11, "SW v 0.%03d", SW_VERSION);
+  lcd_printString(buffer_s);
+  
+  
+  uint16_t pwmka_led2 = 0;
+  uint8_t pwmka_up = 1;
   
   /* USER CODE END 2 */
 
@@ -143,13 +171,25 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     
+
+
+HAL_Delay(MAIN_LOOP*40);    
+
 // DEBUG LED
 
-	  		
-PWM_togle(32);	//LED2
-	  		OUT1_Set;
-	  		HAL_Delay(400);
+if (pwmka_up){ pwmka_led2 += 2;
+  if (pwmka_led2 > 36) pwmka_up = 0;
+}
+else {
+  if (pwmka_led2<=4) pwmka_up = 1;
+  pwmka_led2 -= 2;
+}
+PWM_duty_change(21, (pwmka_led2));
+PWM_duty_change(32, (pwmka_led2));
 
+  lcd_setCharPos(5,10);
+  snprintf(buffer_s, 11, "pwm %02d",pwmka_led2 );
+  lcd_printString(buffer_s);
 
 // END DEBUG LED
 

@@ -28,6 +28,7 @@ typedef struct {
 void PWM_start(uint8_t pwm_channel);
 void PWM_stop(uint8_t pwm_channel);
 void PWM_togle(uint8_t pwm_channel);
+void PWM_duty_change(uint8_t pwm_channel, uint16_t new_duty);
 
 
 #endif /* MODULE_INC_PWM_H_ */

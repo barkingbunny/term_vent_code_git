@@ -141,7 +141,7 @@ void PWM_stop(uint8_t pwm_channel){
 
 
 void PWM_togle(uint8_t pwm_channel){
-	uint8_t running_bool;
+	uint8_t running_bool = FALSE;
 	switch(pwm_channel){
 	case (21): {
 		running_bool = running.TIM2CH1;
@@ -170,7 +170,6 @@ void PWM_togle(uint8_t pwm_channel){
 
 	}
 
-
 	if(TRUE==running_bool){
 		PWM_stop(pwm_channel);
 	}
@@ -179,3 +178,38 @@ void PWM_togle(uint8_t pwm_channel){
 
 }
 
+
+
+void PWM_duty_change(uint8_t pwm_channel, uint16_t new_duty){
+		
+	PWM_stop(pwm_channel);
+
+	switch(pwm_channel){
+	case (21): {
+		htim2.Instance->CCR1 = new_duty; 
+		break; }
+	case (22): {
+		htim2.Instance->CCR2 = new_duty; 
+		break; }
+	case (23): {
+		htim2.Instance->CCR3 = new_duty; 
+		break; }
+	case (24): {
+		htim2.Instance->CCR4 = new_duty; 
+		break;}
+	case (31):{
+		htim3.Instance->CCR1 = new_duty; 
+		break; }
+	case (32):	{
+		htim3.Instance->CCR2 = new_duty; 
+		break; 	}
+	case (33):	{
+		htim3.Instance->CCR3 = new_duty;
+		break;	}
+	case (34):	{
+		htim3.Instance->CCR4 = new_duty;
+		break; 	}
+	}
+	PWM_start(pwm_channel);
+
+}

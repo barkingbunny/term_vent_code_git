@@ -13,7 +13,7 @@
 #include "stm32l0xx_hal.h"
 
 #define DEBUG_TERMOSTAT 		// debug of the code is turned ON!
-#define SW_VERSION 11 // verze softwaru  (nuly pred cislem znaci ze jde o octal number a to pak je pouze 0-7)
+#define SW_VERSION 2 // verze softwaru  (nuly pred cislem znaci ze jde o octal number a to pak je pouze 0-7)
 
 #define BUT_DELAY 10		// in milisecond - I want to read it quckly
 #define MAIN_LOOP 10		// in milisecond
@@ -31,6 +31,9 @@
 #define TEMPERATURE_MIN -1000 //-10.00C maximum temperature, when this limit is reached, the radiator will stop.
 
 #define LOG_DATA_LENGTH 7 // number of logged samples
+
+// INTITIAL STATE values for PWM
+#define LCD_BACKLITE_DUTY 50
 
 typedef enum {FALSE = 0u, TRUE = 1u} Bool;
 // the priority is selected by place in the list.

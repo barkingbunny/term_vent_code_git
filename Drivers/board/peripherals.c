@@ -10,6 +10,8 @@
 
 #include "pinmap.h"
 #include "peripherals.h"
+#include "pwm.h"
+#include "global.h"
 
 Buttons checkButtons(void){
 
@@ -65,15 +67,16 @@ void turnOffHeater(void){
 	Led1Clear;
 }
 
-void backliteOn(void){
+void backlite_init(void){
+	PWM_start(23);
+	PWM_duty_change(23, LCD_BACKLITE_DUTY );
+}
 
-	HAL_GPIO_WritePin(D_LCD_LIGHT_GPIO_Port,D_LCD_LIGHT_Pin,GPIO_PIN_SET);
+void backliteOn(void){
 	PWM_start(23);
 }
 
 void backliteOff(void){
-
-	HAL_GPIO_WritePin(D_LCD_LIGHT_GPIO_Port,D_LCD_LIGHT_Pin,GPIO_PIN_RESET);
 	PWM_stop(23);
 }
 
