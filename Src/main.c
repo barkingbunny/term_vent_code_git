@@ -23,6 +23,10 @@
   *  - download and run (nahrat do desky a spustit) - Termina - Run task - CPU: build, download and run
   * 
   *   
+  */
+   // !!!soubor main.c v rootu je z funkcniho zdrojaku - neni uplne zkopirovan, 
+
+
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -32,11 +36,17 @@
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
-#include "usb.h"
+#include "usb_device.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+/**
+ * Program pro ventilacni system
+ */
+#include "pinmap.h"
+#include "pwm.h"
+
 
 /* USER CODE END Includes */
 
@@ -87,7 +97,14 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  char buffer_s [32];
 
+  uint32_t InputVoltage=0;
+  uint8_t en_count_last=0;
+  
+  
+
+  
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -110,26 +127,32 @@ int main(void)
   MX_TIM22_Init();
   MX_USART1_UART_Init();
   MX_USART4_UART_Init();
-  MX_USB_PCD_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  HAL_GPIO_WritePin(D_LED2_GPIO_Port,D_LED2_Pin, GPIO_PIN_SET);
-  
-  while (1)
+  for (;;)
   {
-HAL_GPIO_TogglePin(D_LED1_GPIO_Port,D_LED1_Pin);
-HAL_GPIO_TogglePin(D_LED2_GPIO_Port,D_LED2_Pin);
-HAL_Delay(500);
+
 
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    
+// DEBUG LED
+
+	  		
+PWM_togle(32);	//LED2
+	  		OUT1_Set;
+	  		HAL_Delay(400);
+
+
+// END DEBUG LED
+
   }
   /* USER CODE END 3 */
 }
