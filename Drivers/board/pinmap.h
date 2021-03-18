@@ -18,6 +18,25 @@
 
 #ifndef PINMAP_H_
 #define PINMAP_H_
+/**
+ *  21 Diganosticka LED -1 D_LED1
+ *  22 pipak D_BUZZER
+ *  23 LCD podsvetleni a klavesnice D_LCD_LIGHT
+ *  24 LCD_TFT podsvetleni
+ *  31 vystup 1 - D_OUT1
+ *  32 diagnosticka LED D_LED2
+ *  33 - DISABLED
+ *  34 Vystup 2 - D_OUT2
+ * */
+//definice nazvu pro PWM periferii
+#define LED1 21
+#define BUZZER 22
+#define LCD_LIGHT 23
+#define TFT_LCD_LIGHT 24
+#define OUT1 31
+#define LED2 32
+#define OUT2 34
+
 
 #define Led1Set HAL_GPIO_WritePin(D_LED1_GPIO_Port,D_LED1_Pin,GPIO_PIN_SET)
 #define Led2Set HAL_GPIO_WritePin(D_LED2_GPIO_Port,D_LED2_Pin,GPIO_PIN_SET)

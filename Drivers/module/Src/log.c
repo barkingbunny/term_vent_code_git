@@ -17,6 +17,15 @@
 uint16_t index_log_wr = 0;
 uint16_t index_log_read = 0xfffe;
 
+/**
+ * Inicializace databaze - je to nutne na zacatku
+ */
+void Log_Init(){
+	flags_log.read_request = FALSE;
+// delete complete variable log_data
+	Log_errase_database();
+} // end Log_Init
+
 uint8_t Log_Data(RTC_HandleTypeDef* RtcHandle, int16_t temperature, int16_t humidity, int16_t pressure, uint16_t diagnostics)
 {
 	char TimeMark[25] = {0};
@@ -60,7 +69,7 @@ void RTC_TimeMark_Log_Struct(log_item_t* log_handle, char* showtime)
 void RTC_TimeMark_Log_Struct_Short(log_item_t* log_handle, char* showtime)
 {
 
-  /* Display time Format : yy:mm:dd:hh:mm */
+  /* Display time Format : hh:mm */
   sprintf((char*)showtime,"%02d:%02d", log_handle->hour , log_handle->minute);
 }
 
@@ -106,14 +115,7 @@ uint8_t Log_Read(log_item_t* log_Handle){
 		index_log_read=index_log_wr-1;  // set the reading data to the latest log
 		flags_log.read_request = TRUE;
 	}
-	if ( 0 != Log_memory_fullness() ) return 0;
-
-#ifdef DEBUG_TERMOSTAT
-char buffer_s [32];
-lcd_setCharPos(1,0);
-snprintf(buffer_s, 19, "rd=%3i;wr%3i  ", index_log_read, index_log_wr-1);
-lcd_printString(buffer_s);
-#endif
+	if ( 0 == Log_memory_fullness() ) return 0; // pokud je prazdny buffer, tak nepokracuj a vrat 0;
 
 	do {	// Write je uz o jedno vetsi, tak neni treba ho navysovat...
 		index_log_read++;
@@ -121,14 +123,6 @@ lcd_printString(buffer_s);
 			index_log_read = 0;
 		// NEBEZPECI pri prazdnem bufferu se to zde zacykli a kousne se cely procesor
 	} while (0 == log_data[index_log_read].day);
-
-
-
-#ifdef DEBUG_TERMOSTAT
-lcd_setCharPos(2,0);
-snprintf(buffer_s, 10, "ctu %3i ", index_log_read);
-lcd_printString(buffer_s);
-#endif
 
 	//memcpy(log_Handle, log_data[index_log_read], arraysize * sizeof (struct log_item_t));
 	log_Handle->temp_1 = log_data[index_log_read].temp_1;
@@ -147,6 +141,13 @@ lcd_printString(buffer_s);
 	return 1;
 }
 
+/** Log data - transfered to string
+ * field_lenght 18 => short version; 32 = normal version
+ * return statements:
+ * 2 - if there are more data to read, return 2;
+ * 1 - if all memory was read, return 1;
+ * 0 - nodata in memeory / ERROR
+ */
 uint8_t Log_To_String(char* field_of_char, uint8_t field_lenght){
 	log_item_t log_Handle;
 	uint8_t log_read_stat= 0;
@@ -160,38 +161,28 @@ uint8_t Log_To_String(char* field_of_char, uint8_t field_lenght){
 	else
 	{
 		RTC_TimeMark_Log_Struct(&log_Handle, TimeMark);
-		snprintf((char*)field_of_char, 32, "%s;%d;%d;",TimeMark,log_Handle.temp_1, log_Handle.hum_1);
+		snprintf((char *)field_of_char, 32, "%s;%d;%d;", TimeMark, log_Handle.temp_1, log_Handle.hum_1);
 	}
 		return log_read_stat;
-		// 2 - if there are more data to read, return 2;
-		// 1 - if all memory was read, return 1;
-		// 0 - nodata in memeory / ERROR
-
 }
 
-/**
- * Inicializace databaze - je to nutne na zacatku
- */
-void Log_Init(){
-	flags_log.read_request = FALSE;
-// delete complete variable log_data
-	Log_errase_database();
-} // end Log_Init
+
 
 void Log_errase_database(void){
 	for (uint16_t index=0; index<LOG_DATA_LENGTH; index++){
-		log_data[index_log_wr].temp_1= 0;
-		log_data[index_log_wr].hum_1 = 0;
-		log_data[index_log_wr].year = 0;
-		log_data[index_log_wr].month = 0;
-		log_data[index_log_wr].day = 0;
-		log_data[index_log_wr].hour = 0;
-		log_data[index_log_wr].minute = 0;
+		log_data[index].temp_1= 0;
+		log_data[index].hum_1 = 0;
+		log_data[index].year = 0;
+		log_data[index].month = 0;
+		log_data[index].day = 0;
+		log_data[index].hour = 0;
+		log_data[index].minute = 0;
 	} // end FOR
-
 }
+
 /**Return number of recorded data in the database
- *
+ * Using day in date (day is not zero (01-31). If it is zero - memory place is free)
+ * return: number of filled memory space
  */
 uint16_t Log_memory_fullness(void){
 	uint16_t log_occupate = 0;
@@ -202,10 +193,10 @@ uint16_t Log_memory_fullness(void){
 	return log_occupate;
 }
 
-/** Vymaze poslednich "delete_last" zaznamu z databaze
+/** Vymaze nejstarsich (n) "delete_last" zaznamu z databaze
  *
  */
-uint8_t Log_delete_last(uint16_t delete_last){
+uint8_t Log_delete_old(uint16_t delete_old){
 	uint16_t index_log_delete = index_log_wr-1;  // set the reading data to the latest log
 	do {	// Write je uz o jedno vetsi, tak neni treba ho navysovat...
 		index_log_delete++;
@@ -213,7 +204,7 @@ uint8_t Log_delete_last(uint16_t delete_last){
 			index_log_delete = 0;
 		// NEBEZPECI pri prazdnem bufferu se to zde zacykli a kousne se cely procesor
 	} while (0 == log_data[index_log_delete].day);
-	for (uint16_t index=0; index<delete_last; index++){
+	for (uint16_t index=0; index<delete_old; index++){
 		log_data[index_log_delete].temp_1=0;
 		log_data[index_log_delete].hum_1=0;
 		log_data[index_log_delete].year=0;

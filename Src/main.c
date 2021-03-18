@@ -153,10 +153,15 @@ int main(void)
   lcd_printString("term_vent_git\r");
   snprintf(buffer_s, 11, "SW v 0.%03d", SW_VERSION);
   lcd_printString(buffer_s);
-  
-  
-  uint16_t pwmka_led2 = 0;
-  uint8_t pwmka_up = 1;
+  //ENCODER initialization
+  HAL_TIM_Encoder_Start(&htim22,TIM_CHANNEL_1);
+  htim22.Instance->EGR = 1;           // Generate an update event
+  htim22.Instance->CR1 = 1;           // Enable the counter
+
+  HAL_Delay(1700);
+
+
+   
   
   /* USER CODE END 2 */
 
@@ -164,35 +169,36 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   for (;;)
   {
+// mereni Analogoveho vstupu
+uint16_t adres;
+ // Start ADC Conversion
+
+    	HAL_ADC_Start(&hadc);
+          	
+      if (HAL_ADC_PollForConversion(&hadc, 10) == HAL_OK)
+        {
+      adres = HAL_ADC_GetValue(&hadc);
+      
+        }
+
+
+lcd_setCharPos(5,6);
+  snprintf(buffer_s, 12, "adc %d",adres);
+  lcd_printString(buffer_s);
+
+
+
+
 
 
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    
 
-
-HAL_Delay(MAIN_LOOP*40);    
-
-// DEBUG LED
-
-if (pwmka_up){ pwmka_led2 += 2;
-  if (pwmka_led2 > 36) pwmka_up = 0;
-}
-else {
-  if (pwmka_led2<=4) pwmka_up = 1;
-  pwmka_led2 -= 2;
-}
-PWM_duty_change(21, (pwmka_led2));
-PWM_duty_change(32, (pwmka_led2));
-
-  lcd_setCharPos(5,10);
-  snprintf(buffer_s, 11, "pwm %02d",pwmka_led2 );
-  lcd_printString(buffer_s);
-
-// END DEBUG LED
-
+    HAL_Delay(MAIN_LOOP);
+    debug_led_heartbeat();
+        
   }
   /* USER CODE END 3 */
 }

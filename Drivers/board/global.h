@@ -13,10 +13,10 @@
 #include "stm32l0xx_hal.h"
 
 #define DEBUG_TERMOSTAT 		// debug of the code is turned ON!
-#define SW_VERSION 2 // verze softwaru  (nuly pred cislem znaci ze jde o octal number a to pak je pouze 0-7)
+#define SW_VERSION 3 // verze softwaru  (nuly pred cislem znaci ze jde o octal number a to pak je pouze 0-7)
 
 #define BUT_DELAY 10		// in milisecond - I want to read it quckly
-#define MAIN_LOOP 10		// in milisecond
+#define MAIN_LOOP 20		// in milisecond
 #define MEASURE_PERIODE 2000 // every 1 secondn
 #define LED_PERIODE 500 //
 #define TIME_PERIODE 400 // ms definition of periode for checking time change (RTC change )

@@ -47,7 +47,7 @@ uint8_t Log_To_String(char* field_of_char, uint8_t field_lenght);
 void Log_Init();
 void Log_errase_database(void);
 uint16_t Log_memory_fullness(void);
-uint8_t Log_delete_last(uint16_t delete_last);
+uint8_t Log_delete_old(uint16_t delete_last);
 
 log_item_t log_data[LOG_DATA_LENGTH];
 

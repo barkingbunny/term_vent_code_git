@@ -13,7 +13,10 @@
 #include "pwm.h"
 #include "global.h"
 
-Buttons checkButtons(void){
+static uint16_t pwmka_up = 1;
+
+Buttons checkButtons(void)
+{
 
 	if (!SW1)
 	{
@@ -32,27 +35,15 @@ Buttons checkButtons(void){
 
 void togleLED(uint8_t led)
 {
-	switch (led)
-	{
-	case LED1:
-	{
-		Led1Tgl;
-		break;
-	}
-	case LED2:
-	{
-		Led2Tgl;
-		break;
-	}
-	}
+	PWM_togle(led);	
 }
 
 uint8_t turnOnHeater(uint32_t temperature)
 {
-	if (TEMPERATURE_MAX>temperature)
+	if (TEMPERATURE_MAX > temperature)
 	{
 		OUT1_Set;
-		Led1Set;
+		PWM_start(LED1);
 	}
 
 	else
@@ -62,44 +53,41 @@ uint8_t turnOnHeater(uint32_t temperature)
 	return 0;
 }
 
-void turnOffHeater(void){
+void turnOffHeater(void)
+{
 	OUT1_Clear;
-	Led1Clear;
+	PWM_stop(LED1);
 }
 
-void backlite_init(void){
+void backlite_init(void)
+{
 	PWM_start(23);
-	PWM_duty_change(23, LCD_BACKLITE_DUTY );
+	PWM_duty_change(23, LCD_BACKLITE_DUTY);
 }
 
-void backliteOn(void){
+void backliteOn(void)
+{
 	PWM_start(23);
 }
 
-void backliteOff(void){
+void backliteOff(void)
+{
 	PWM_stop(23);
 }
 
-/*
-void toggleLED(const uint8_t led){
-
-	switch (led)
+void debug_led_heartbeat(void)
+{
+	PWM_stop(21);
+	uint16_t duty = htim2.Instance->CCR1;
+	if (pwmka_up)
 	{
-		case LED_RED:
-			{
-				HAL_GPIO_TogglePin();
-				break;
-			}
-		case LED_YELLOW:
-			{
-				HAL_GPIO_TogglePin();
-				break;
-			}
-		case LED_GREEN:
-			{
-				HAL_GPIO_TogglePin();
-				break;
-			}
+		htim2.Instance->CCR1++;
+		if (duty >= 38)	pwmka_up = 0;
 	}
+	else
+	{
+		htim2.Instance->CCR1--;
+		if (duty <= 7)	pwmka_up = 1;
+	}
+	PWM_start(21);
 }
-*/
