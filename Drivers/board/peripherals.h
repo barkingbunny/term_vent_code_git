@@ -31,8 +31,8 @@ typedef enum {	BUT_NONE = 0,
 
 void togleLED(uint8_t led);
 Buttons checkButtons(void);
-uint8_t turnOnHeater(uint32_t temperature);
-void turnOffHeater(void);
+uint8_t turnOnVentilator(uint16_t ventPWM);
+void turnOffVentilator(void);
 void backlite_init(void);
 void backliteOn(void);
 void backliteOff(void);

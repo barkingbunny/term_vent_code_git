@@ -73,9 +73,9 @@ void mode_auto_sort(Mode_auto_s *actual_auto)
  * 
  * @param actual_auto  vstupni struktura, ktera udava data
  * @param RtcHandle 
- * @return int16_t hodnota 0-valid temp - status = TRUE; 
- * 					-20000 -> status = False - tedy vypni; 
- * 					-21000 -> neni v pameti zadny zapnuty casovac; 
+ * @return int16_t hodnota 50-valid value - status = TRUE; 
+ * 					00 -> status = False - tedy vypni; 
+ * 					1 -> neni v pameti zadny zapnuty casovac; 
  */
 int16_t mode_auto_temperature(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle)
 {
@@ -99,18 +99,18 @@ int16_t mode_auto_temperature(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHa
 	if (1 == actual_auto->activeIndex) // je aktivni prave jeden - tedy teplota je dana jim
 	{
 		if (actual_auto->status[0].state)
-			temperature_auto = actual_auto->tempOn[0];
+			temperature_auto = actual_auto->PWM_IN[0];
 		else
-			temperature_auto = -20000;
+			temperature_auto = 00;
 	}
 	else if (actual_auto->activeIndex > 1)
 	{
 		// pokud je aktualni cas vetsi nez jakykoliv nastaveny, tak plati posledni nastaveny (casova osa)
 		if (TRUE == actual_auto->status[actual_auto->sortIndex[actual_auto->activeIndex - 1]].state)
-			temperature_auto = actual_auto->tempOn[actual_auto->sortIndex[actual_auto->activeIndex - 1]];
+			temperature_auto = actual_auto->PWM_IN[actual_auto->sortIndex[actual_auto->activeIndex - 1]];
 		else // topeni je v tuto dobu vypnute
 		{
-			temperature_auto = -20000;
+			temperature_auto = 00;
 		}
 
 		for (uint8_t index = 0; index < actual_auto->activeIndex; index++)
@@ -120,17 +120,17 @@ int16_t mode_auto_temperature(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHa
 				if (0 == index)
 				{
 					if (TRUE == actual_auto->status[actual_auto->sortIndex[actual_auto->activeIndex - 1]].state)
-						temperature_auto = actual_auto->tempOn[actual_auto->sortIndex[actual_auto->activeIndex - 1]];
+						temperature_auto = actual_auto->PWM_IN[actual_auto->sortIndex[actual_auto->activeIndex - 1]];
 					else // topeni je v tuto dobu vypnute
-						temperature_auto = -20000;
+						temperature_auto = 0000;
 					break;
 				}
 				else
 				{
 					if (TRUE == actual_auto->status[actual_auto->sortIndex[index - 1]].state)
-						temperature_auto = actual_auto->tempOn[actual_auto->sortIndex[index - 1]];
+						temperature_auto = actual_auto->PWM_IN[actual_auto->sortIndex[index - 1]];
 					else // topeni je v tuto dobu vypnute
-						temperature_auto = -20000;
+						temperature_auto = 0000;
 					break;
 				}
 			}
@@ -138,10 +138,22 @@ int16_t mode_auto_temperature(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHa
 	}
 	else // pravdepodobne je to 0, nebo chyba?
 	{
-		temperature_auto = -21000;
+		temperature_auto = 1;
 	}
 
 	return temperature_auto;
+}
+
+/**
+ * @brief zjisti v aktualnim case index, ktery je aktualni v dane strukture
+ * 
+ * @param actual_auto struktura pro hledani
+ * @param RtcHandle 
+ * @return uint8_t Index ve strukture na kterem se nachazi aktualni parametry.
+ */
+uint8_t mode_auto_index(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle)
+{
+	return 1;
 }
 
 /**
@@ -219,12 +231,12 @@ void mode_auto_graph(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle)
 				{
 					if (TRUE == actual_auto->status[actual_auto->sortIndex[index]].state) // ZAPNI TOPENI
 					{
-						if (actual_auto->tempOn[actual_auto->sortIndex[index]] > 2100) // teplota je nad 21 C
+						if (actual_auto->PWM_IN[actual_auto->sortIndex[index]] > 240)
 						{
 							line((zacatek + 4), 49, (lcd_usable_width + 4), 49, 1); //stav ZAPNUTP
 							line((4), 49, (konec + 4), 49, 1);						//stav ZAPNUTP
 						}
-						if (actual_auto->tempOn[actual_auto->sortIndex[index]] > 2000) // teplota je nad 20 C
+						if (actual_auto->PWM_IN[actual_auto->sortIndex[index]] > 200)
 						{
 							line((4 + zacatek), 50, (lcd_usable_width + 4), 50, 1); //stav ZAPNUTP
 							line((4), 50, (konec + 4), 50, 1);						//stav ZAPNUTP
@@ -242,11 +254,11 @@ void mode_auto_graph(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle)
 				{
 					if (TRUE == actual_auto->status[actual_auto->sortIndex[index]].state) // ZAPNI TOPENI
 					{
-						if (actual_auto->tempOn[actual_auto->sortIndex[index]] > 2100) // teplota je nad 21 C
-							line((4 + zacatek), 49, (konec + 4), 49, 1);			   //stav ZAPNUTP
-						if (actual_auto->tempOn[actual_auto->sortIndex[index]] > 2000) // teplota je nad 20 C
-							line((4 + zacatek), 50, (konec + 4), 50, 1);			   //stav ZAPNUTP
-						line((4 + zacatek), 51, (konec + 4), 51, 1);				   //stav ZAPNUTP
+						if (actual_auto->PWM_IN[actual_auto->sortIndex[index]] > 240) // nad 240
+							line((4 + zacatek), 49, (konec + 4), 49, 1);			  //stav ZAPNUTP
+						if (actual_auto->PWM_IN[actual_auto->sortIndex[index]] > 200) // vzduch je nad 200
+							line((4 + zacatek), 50, (konec + 4), 50, 1);			  //stav ZAPNUTP
+						line((4 + zacatek), 51, (konec + 4), 51, 1);				  //stav ZAPNUTP
 					}
 					else // prikaz pro topeni - vypnout
 					{
@@ -258,7 +270,7 @@ void mode_auto_graph(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle)
 	}
 } /* END OF  - SEM BUDU PSAT proceduru pro vygresleni GRAFU, co znazorni zap/vyp topeni v jednodenim cyklu*/
 
-void mode_auto_graph_delete()
+void mode_auto_graph_delete(void)
 {
 	line_clear(49);
 }

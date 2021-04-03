@@ -44,7 +44,8 @@ typedef struct menu_item_s{
 }menu_item_t;
 
 extern menu_item_t* ActualMenu;
-extern int32_t temperature_set;
+
+extern uint16_t ventilation_set;
 extern Buttons pushed_button;
 extern int8_t en_count;
 extern int32_t temperature;

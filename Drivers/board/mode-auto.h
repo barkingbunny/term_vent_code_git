@@ -28,7 +28,8 @@ typedef struct {
  * 
  */
 typedef struct {
-	uint16_t tempOn[AUTO_TIMERS]; // hodnota na kterou se zapne
+	uint16_t PWM_OUT[AUTO_TIMERS]; // PWM hodnota pro ventilator zenouci vzduch VEN
+	uint16_t PWM_IN[AUTO_TIMERS]; //  PWM hodnota pro ventilator zenouci vzduch dovnitr
 	uint16_t housekeep; // hodnota pro standby rezim
 	Time_short_s time_s[AUTO_TIMERS]; 	// casy pro zmenu
 	Flags_mode_s status[AUTO_TIMERS]; 	// statusy pro kazdy timer
@@ -52,8 +53,9 @@ typedef struct {
 void mode_auto_init(Mode_auto_s *actual_auto);
 void mode_auto_sort(Mode_auto_s *actual_auto);
 int16_t mode_auto_temperature(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle);
+uint8_t mode_auto_index(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle);
 void mode_auto_graph(Mode_auto_s *actual_auto, RTC_HandleTypeDef *RtcHandle);
-void mode_auto_graph_delete();
+void mode_auto_graph_delete(void);
 
 
 #endif

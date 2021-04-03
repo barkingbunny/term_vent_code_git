@@ -35,59 +35,65 @@ Buttons checkButtons(void)
 
 void togleLED(uint8_t led)
 {
-	PWM_togle(led);	
+	PWM_togle(led);
 }
 
-uint8_t turnOnHeater(uint32_t temperature)
+uint8_t turnOnVentilator(uint16_t ventPWM)
 {
-	if (TEMPERATURE_MAX > temperature)
+	if (VENTILATION_PWM_MIN <= ventPWM)
 	{
-		OUT1_Set;
-		PWM_start(LED1);
+		PWM_start(OUT1);
+		PWM_duty_change(OUT1, ventPWM);
+		PWM_start(OUT2);
+		PWM_duty_change(OUT2, ventPWM);
 	}
 
 	else
 	{
-		turnOffHeater();
+		turnOffVentilator();
 	}
 	return 0;
 }
 
-void turnOffHeater(void)
+void turnOffVentilator(void)
 {
-	OUT1_Clear;
-	PWM_stop(LED1);
+	PWM_stop(OUT1);
+	PWM_stop(OUT2);
 }
 
 void backlite_init(void)
 {
-	PWM_start(23);
-	PWM_duty_change(23, LCD_BACKLITE_DUTY);
+	PWM_start(LCD_LIGHT);
+	PWM_duty_change(LCD_LIGHT, LCD_BACKLITE_DUTY);
 }
 
 void backliteOn(void)
 {
-	PWM_start(23);
+	PWM_start(LCD_LIGHT);
 }
 
 void backliteOff(void)
 {
-	PWM_stop(23);
+	PWM_stop(LCD_LIGHT);
 }
 
 void debug_led_heartbeat(void)
 {
-	PWM_stop(21);
-	uint16_t duty = htim2.Instance->CCR1;
+	PWM_stop(LED1);
+	uint16_t duty = PWM_duty_read(LED1);
+
 	if (pwmka_up)
 	{
-		htim2.Instance->CCR1++;
-		if (duty >= 38)	pwmka_up = 0;
+		duty++;
+		if (duty >= 38)
+			pwmka_up = 0;
 	}
 	else
 	{
-		htim2.Instance->CCR1--;
-		if (duty <= 7)	pwmka_up = 1;
+		duty--;
+		if (duty <= 7)
+			pwmka_up = 1;
 	}
-	PWM_start(21);
+	PWM_duty_change(LED1, duty);
+	PWM_start(LED1);
 }

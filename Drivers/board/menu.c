@@ -15,10 +15,13 @@ menu_item_t* ActualMenu;
 Compare_t menu_compare;
 int8_t position=0, position_x=0;
 int8_t EN_count=-1;
-int32_t set_temperature=2000;
+uint16_t backlite_value = LCD_BACKLITE_DUTY;
+
+uint16_t set_vent=2000;
 RTC_TimeTypeDef set_stimestructureget;
 RTC_HandleTypeDef set_RtcHandle;
 RTC_DateTypeDef set_datestruct;
+
 
 
 uint8_t activation_memu(){
@@ -362,33 +365,33 @@ void display_menu(menu_item_t* display_menu) {
 					//				snprintf(buffer_menu, 12, "%d.%02d C",temperature/100,temperature%100);
 					//				lcd_printString(buffer_menu);
 
-					lcd_setCharPos(3,0);
+					lcd_setCharPos(3,2);
 					char_magnitude(1);
-					snprintf(buffer_menu, 16, "Set temperature");
+					snprintf(buffer_menu, 16, "Set PWM vent");
 					lcd_printString(buffer_menu);
 
-					set_temperature = temperature_set+en_count*50;
-					if (set_temperature > TEMPERATURE_MAX) // if the chosen temperature is higher than maximum allowed temperature
+					set_vent = ventilation_set+en_count*5;
+					if (set_vent > VENTILATION_PWM_MAX) // if the chosen temperature is higher than maximum allowed temperature
 					{
-						set_temperature = TEMPERATURE_MAX;
-						en_count= (set_temperature-temperature_set)/50; // calculate how much it should be at temp max
+						set_vent = VENTILATION_PWM_MAX;
+						en_count= (set_vent-ventilation_set)/5; // calculate how much it should be at temp max
 					}
-					if (set_temperature < TEMPERATURE_MIN) // if the chosen temperature is lower than minimum allowed temperature
+					if (set_vent < VENTILATION_PWM_MIN) // if the chosen temperature is lower than minimum allowed temperature
 					{
-						set_temperature = TEMPERATURE_MIN;
-						en_count= (set_temperature-temperature_set)/50;
+						set_vent = VENTILATION_PWM_MIN;
+						en_count= (set_vent-ventilation_set)/5;
 
 					}
 					lcd_setCharPos(5,3);
 					char_magnitude(2);
-					snprintf(buffer_menu, 12, "%3ld.%02d C ",set_temperature/100,abs(set_temperature%100));
+					snprintf(buffer_menu, 12, " %3d ",set_vent);
 					lcd_printString(buffer_menu);
 					char_magnitude(1);
 				}
 			}
 			if (pushed_button == BUT_ENC)
 			{ // BUTTONE PUSHED
-				temperature_set = set_temperature;
+				ventilation_set = set_vent;
 				//			show = desktop;
 				flags.temp_new_set = TRUE;
 				flags.heating_up = TRUE; // if the button was pushed, turn-on the heater, even if the temperature is reached.
